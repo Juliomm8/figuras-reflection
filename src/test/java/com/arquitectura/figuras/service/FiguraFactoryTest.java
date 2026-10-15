@@ -1,11 +1,17 @@
 package com.arquitectura.figuras.service;
 
+import com.arquitectura.figuras.model.Circulo;
+import com.arquitectura.figuras.model.Cuadrado;
 import com.arquitectura.figuras.model.Figura;
+import com.arquitectura.figuras.model.TrianguloEquilatero;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.beans.ConstructorProperties;
+import java.lang.reflect.Constructor;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,11 +37,38 @@ class FiguraFactoryTest {
 	}
 
 	@Test
+	void localizaYEjecutaElConstructorParametrizadoDeCirculo() throws Exception {
+		Constructor<Circulo> constructor = Circulo.class.getDeclaredConstructor(double.class);
+		ConstructorProperties propiedades = constructor.getAnnotation(ConstructorProperties.class);
+		Figura circulo = constructor.newInstance(5.0);
+
+		assertArrayEquals(new String[]{"radio"}, propiedades.value());
+		assertEquals(Math.PI * 25, circulo.calcularArea(), 0.0000001);
+		assertEquals(2 * Math.PI * 5, circulo.calcularPerimetro(), 0.0000001);
+	}
+
+	@Test
 	void creaRectanguloMedianteReflection() {
 		Figura rectangulo = figuraFactory.crearFigura("Rectangulo", Map.of("base", 10, "altura", 5));
 
 		assertEquals(50, rectangulo.calcularArea(), 0.0000001);
 		assertEquals(30, rectangulo.calcularPerimetro(), 0.0000001);
+	}
+
+	@Test
+	void creaCuadradoMedianteReflection() {
+		Figura cuadrado = figuraFactory.crearFigura("Cuadrado", Map.of("lado", 4));
+
+		assertEquals(16, cuadrado.calcularArea(), 0.0000001);
+		assertEquals(16, cuadrado.calcularPerimetro(), 0.0000001);
+	}
+
+	@Test
+	void creaTrianguloEquilateroMedianteReflection() {
+		Figura triangulo = figuraFactory.crearFigura("TrianguloEquilatero", Map.of("lado", 4));
+
+		assertEquals(4 * Math.sqrt(3), triangulo.calcularArea(), 0.0000001);
+		assertEquals(12, triangulo.calcularPerimetro(), 0.0000001);
 	}
 
 	@Test

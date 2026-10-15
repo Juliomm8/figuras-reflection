@@ -144,9 +144,39 @@ Content-Type: application/json
 
 También se puede comprobar que la API está activa con `GET /api/figuras`.
 
-## Cómo funciona Reflection
+## Creación mediante constructores y Reflection
 
-`Class.forName(...)` localiza una clase a partir de su nombre completo. `getDeclaredConstructor().newInstance()` obtiene y ejecuta su constructor sin parámetros, sin escribir un `new` específico para cada figura. Para cada parámetro, la fábrica busca un `Field`, llama a `setAccessible(true)` para permitir el acceso a campos privados y usa `field.set(...)` después de convertir el valor al tipo declarado. Se soportan tipos numéricos comunes, booleanos y `String`.
+Las figuras nativas declaran constructores parametrizados con `@ConstructorProperties`, que relaciona cada argumento con el nombre recibido en el `Map`. Por ejemplo, `Circulo` declara `@ConstructorProperties({"radio"})` en `Circulo(double radio)` y `Rectangulo` declara los nombres `base` y `altura`.
+
+Para crear un círculo, `FiguraFactory` sigue este flujo genérico:
+
+```text
+"Circulo"
+    ↓
+Class.forName(...)
+    ↓
+Class<Circulo>
+    ↓
+getDeclaredConstructor(double.class)
+    ↓
+Constructor<Circulo>
+    ↓
+newInstance(5.0)
+    ↓
+Circulo
+    ↓
+Figura
+    ↓
+calcularArea()
+```
+
+La fábrica inspecciona los constructores, obtiene sus nombres mediante `ConstructorProperties`, compara esos nombres con las claves del request y convierte cada valor al tipo esperado. El orden del JSON no afecta la selección. Conceptualmente, el resultado equivale a `new Circulo(5.0)`, pero la fábrica nunca escribe el nombre concreto de la figura ni invoca directamente su constructor.
+
+## Asignación mediante Field
+
+Las figuras cargadas desde Groovy pueden tener solamente un constructor vacío implícito, como el `Pentagono` del ejemplo. Si no existe un constructor parametrizado anotado compatible, `FiguraFactory` usa `getDeclaredConstructor().newInstance()` y asigna cada parámetro con `Field`, `setAccessible(true)` y `field.set(...)`.
+
+Así se conservan los dos usos de Java Reflection: `Constructor` permite localizar y ejecutar una clase con argumentos en tiempo de ejecución, mientras que `Field` permite modificar sus atributos cuando una clase dinámica no ofrece un constructor parametrizado compatible.
 
 ## Cómo funciona Groovy en tiempo de ejecución
 

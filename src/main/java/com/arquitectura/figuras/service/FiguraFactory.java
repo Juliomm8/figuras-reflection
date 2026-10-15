@@ -3,12 +3,16 @@ package com.arquitectura.figuras.service;
 import com.arquitectura.figuras.model.Figura;
 import org.springframework.stereotype.Service;
 
+import java.beans.ConstructorProperties;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -26,17 +30,66 @@ public class FiguraFactory {
 		Class<? extends Figura> clase = localizarClase(nombreClase.trim());
 		Map<String, Object> valores = parametros == null ? Collections.emptyMap() : parametros;
 
+		Figura figuraConConstructor = crearConConstructorParametrizado(clase, valores);
+		if (figuraConConstructor != null) {
+			return figuraConConstructor;
+		}
+
 		try {
-			Constructor<? extends Figura> constructor = clase.getDeclaredConstructor();
+			// Fallback para clases dinámicas sin constructor parametrizado.
+			Constructor<?> constructor = clase.getDeclaredConstructor();
 			constructor.setAccessible(true);
-			Figura figura = constructor.newInstance();
+			Figura figura = (Figura) constructor.newInstance();
 			asignarParametros(figura, clase, valores);
 			return figura;
 		} catch (NoSuchMethodException exception) {
-			throw new FiguraException("La clase " + nombreClase + " debe tener un constructor sin parámetros", exception);
+			throw new FiguraException("La clase " + nombreClase
+					+ " no tiene un constructor compatible ni uno sin parámetros", exception);
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException exception) {
 			throw new FiguraException("No se pudo instanciar la figura " + nombreClase, exception);
 		}
+	}
+
+	private Figura crearConConstructorParametrizado(Class<? extends Figura> clase,
+			Map<String, Object> parametros) {
+		boolean tieneConstructorAnotado = false;
+		for (Constructor<?> declarado : clase.getDeclaredConstructors()) {
+			ConstructorProperties propiedades = declarado.getAnnotation(ConstructorProperties.class);
+			if (propiedades == null || propiedades.value().length != declarado.getParameterCount()) {
+				continue;
+			}
+
+			tieneConstructorAnotado = true;
+			Set<String> nombresEsperados = new HashSet<>(Arrays.asList(propiedades.value()));
+			if (nombresEsperados.size() != propiedades.value().length
+					|| !nombresEsperados.equals(parametros.keySet())) {
+				continue;
+			}
+
+			Class<?>[] tipos = declarado.getParameterTypes();
+			Object[] argumentos = new Object[tipos.length];
+			for (int indice = 0; indice < tipos.length; indice++) {
+				String nombreParametro = propiedades.value()[indice];
+				argumentos[indice] = convertirValor(parametros.get(nombreParametro), tipos[indice], nombreParametro);
+			}
+
+			try {
+				// La clase concreta se resuelve en tiempo de ejecución.
+				Constructor<?> constructor = clase.getDeclaredConstructor(tipos);
+				constructor.setAccessible(true);
+				// El constructor se localiza y ejecuta mediante Reflection.
+				return (Figura) constructor.newInstance(argumentos);
+			} catch (NoSuchMethodException | InstantiationException | IllegalAccessException
+					| InvocationTargetException exception) {
+				throw new FiguraException("No se pudo ejecutar el constructor de " + clase.getSimpleName(), exception);
+			}
+		}
+
+		if (tieneConstructorAnotado) {
+			throw new FiguraException("No existe un constructor parametrizado de " + clase.getSimpleName()
+					+ " compatible con los parámetros " + parametros.keySet());
+		}
+		return null;
 	}
 
 	public void registrarClaseDinamica(Class<?> clase) {

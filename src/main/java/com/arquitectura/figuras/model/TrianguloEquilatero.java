@@ -1,8 +1,18 @@
 package com.arquitectura.figuras.model;
 
+import java.beans.ConstructorProperties;
+
 public class TrianguloEquilatero implements Figura {
 
 	private double lado;
+
+	public TrianguloEquilatero() {
+	}
+
+	@ConstructorProperties({"lado"})
+	public TrianguloEquilatero(double lado) {
+		this.lado = lado;
+	}
 
 	@Override
 	public double calcularArea() {
