@@ -1,9 +1,7 @@
 package com.arquitectura.figuras.service;
 
 import com.arquitectura.figuras.model.Circulo;
-import com.arquitectura.figuras.model.Cuadrado;
 import com.arquitectura.figuras.model.Figura;
-import com.arquitectura.figuras.model.TrianguloEquilatero;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
