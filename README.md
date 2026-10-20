@@ -182,6 +182,116 @@ Así se conservan los dos usos de Java Reflection: `Constructor` permite localiz
 
 `GroovyClassLoader` recibe el texto enviado por el cliente y `parseClass(codigo)` lo compila durante la ejecución. La clase resultante se valida con `Figura.class.isAssignableFrom(clase)`. Si cumple el contrato, `GroovyCompilerService` la registra en `FiguraFactory`; por eso puede solicitarse por nombre en la siguiente petición sin reiniciar Spring.
 
+## EXTRA: proveedor externo de figuras
+
+El proyecto incluye un pequeño servicio independiente llamado `figuras-provider`. Su único objetivo es entregar definiciones de figuras como código Groovy mediante HTTP. Corre en el puerto `8081`, separado de la aplicación principal que corre en `8080`, para demostrar la comunicación entre dos aplicaciones Spring distintas.
+
+El flujo completo es:
+
+```text
+Cliente
+  ↓
+Spring principal (8080)
+  ↓ HTTP con RestClient
+figuras-provider (8081)
+  ↓ código Groovy
+FiguraExternaService
+  ↓
+GroovyCompilerService
+  ↓
+FiguraFactory
+  ↓
+Figura registrada
+```
+
+El proveedor tiene inicialmente estas figuras:
+
+- `Pentagono`
+- `Hexagono`
+
+La URL base se configura en `src/main/resources/application.properties`:
+
+```ini
+figuras.provider.url=http://localhost:8081
+```
+
+La aplicación principal no conoce el código Groovy de esas figuras. `FiguraExternaService` solicita `GET /api/figuras/{nombre}` con `RestClient`, valida la respuesta y entrega el código a `GroovyCompilerService` para compilarlo y registrarlo.
+
+### Demostración completa en PowerShell
+
+Abre una primera terminal en la carpeta del repositorio e inicia el proveedor:
+
+```powershell
+cd C:\Dev\Arquitectura\figuras-reflection
+.\mvnw.cmd -f figuras-provider\pom.xml spring-boot:run
+```
+
+El proveedor queda disponible en `http://localhost:8081`. En una segunda terminal, inicia la aplicación principal:
+
+```powershell
+cd C:\Dev\Arquitectura\figuras-reflection
+.\mvnw.cmd spring-boot:run
+```
+
+Comprueba directamente que el proveedor entrega el código de `Pentagono`:
+
+```powershell
+Invoke-RestMethod `
+  -Method Get `
+  -Uri http://localhost:8081/api/figuras/Pentagono
+```
+
+Carga esa figura en la aplicación principal. Esta petición provoca la consulta HTTP, compilación Groovy y registro dinámico:
+
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:8080/api/figuras/cargar-externa/Pentagono
+```
+
+La respuesta esperada es:
+
+```json
+{
+  "mensaje": "Figura externa cargada correctamente",
+  "clase": "Pentagono"
+}
+```
+
+Sin reiniciar ninguna de las dos aplicaciones, crea el pentágono mediante la fábrica existente:
+
+```powershell
+$cuerpo = @{ clase = "Pentagono"; parametros = @{ lado = 5 } } |
+  ConvertTo-Json -Depth 5
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:8080/api/figuras/crear `
+  -ContentType "application/json" `
+  -Body $cuerpo
+```
+
+La respuesta contiene aproximadamente un área de `43.01193501472417` y un perímetro de `25`.
+
+También se puede probar el segundo código disponible:
+
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:8080/api/figuras/cargar-externa/Hexagono
+
+$cuerpo = @{ clase = "Hexagono"; parametros = @{ lado = 5 } } |
+  ConvertTo-Json -Depth 5
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:8080/api/figuras/crear `
+  -ContentType "application/json" `
+  -Body $cuerpo
+```
+
+Si se solicita una figura que el proveedor no conoce, por ejemplo `Inexistente`, la aplicación principal devuelve un error HTTP 400 entendible. Si el proveedor está apagado, `FiguraExternaService` también devuelve un error controlado sin eliminar ni afectar los endpoints locales.
+
 ## Pruebas
 
 Ejecutar todas las pruebas con:
@@ -191,6 +301,13 @@ Ejecutar todas las pruebas con:
 ```
 
 Las pruebas cubren reflexión para círculo y rectángulo, conversión y asignación de parámetros, errores de figuras inexistentes, compilación de `Pentagono`, registro dinámico, creación posterior y cálculos.
+
+Para probar ambos proyectos sin Internet:
+
+```powershell
+.\mvnw.cmd clean test
+.\mvnw.cmd -f figuras-provider\pom.xml clean test
+```
 
 ## Seguridad
 
