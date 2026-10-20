@@ -11,6 +11,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FiguraFactory {
 
 	private static final String PAQUETE_FIGURAS_NATIVAS = "com.arquitectura.figuras.model.";
+	private static final List<String> NOMBRES_FIGURAS_NATIVAS = List.of(
+			"Circulo", "Cuadrado", "Rectangulo", "TrianguloEquilatero");
 
 	private final Map<String, Class<? extends Figura>> clasesDinamicas = new ConcurrentHashMap<>();
 
@@ -107,6 +110,10 @@ public class FiguraFactory {
 
 	public Map<String, Class<? extends Figura>> obtenerClasesDinamicas() {
 		return Collections.unmodifiableMap(clasesDinamicas);
+	}
+
+	public List<String> obtenerNombresFigurasNativas() {
+		return NOMBRES_FIGURAS_NATIVAS;
 	}
 
 	private Class<? extends Figura> localizarClase(String nombreClase) {

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figuras en tiempo de ejecución</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+</head>
+<body>
+<div class="page-shell">
+    <header class="hero">
+        <div>
+            <p class="eyebrow">Java Spring Boot · Reflection · Groovy</p>
+            <h1>Figuras en tiempo de ejecución</h1>
+            <p class="hero-copy">
+                Observa cómo una figura externa llega como código Groovy, se compila durante la ejecución
+                y queda disponible sin reiniciar Spring.
+            </p>
+        </div>
+        <div class="hero-mark" aria-hidden="true">ƒ</div>
+    </header>
+
+    <section class="pipeline panel" aria-labelledby="pipeline-title">
+        <div class="section-heading compact-heading">
+            <div>
+                <p class="eyebrow">Flujo de la demostración</p>
+                <h2 id="pipeline-title">Del proveedor a una figura disponible</h2>
+            </div>
+        </div>
+        <div class="pipeline-track" role="img" aria-label="Servicio externo, HTTP, Groovy, compilación en tiempo de ejecución, FiguraFactory y figura disponible">
+            <span>Servicio externo</span><b>→</b><span>HTTP</span><b>→</b><span>Groovy</span><b>→</b>
+            <span>Compilación runtime</span><b>→</b><span>FiguraFactory</span><b>→</b><strong>Figura disponible</strong>
+        </div>
+    </section>
+
+    <main class="content-grid">
+        <section class="panel system-panel" aria-labelledby="system-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Estado de la aplicación</p>
+                    <h2 id="system-title">Figuras del sistema</h2>
+                </div>
+                <button id="refresh-button" class="button button-light" type="button">Actualizar estado</button>
+            </div>
+            <div class="figure-groups">
+                <div class="figure-group">
+                    <div class="group-title"><span class="status-dot native-dot"></span><h3>Figuras nativas</h3></div>
+                    <p class="muted">Clases Java disponibles desde el inicio.</p>
+                    <ul id="native-list" class="figure-list"></ul>
+                </div>
+                <div class="figure-group dynamic-group">
+                    <div class="group-title"><span class="status-dot dynamic-dot"></span><h3>Figuras dinámicas cargadas</h3></div>
+                    <p class="muted">Clases incorporadas durante esta ejecución.</p>
+                    <ul id="dynamic-list" class="figure-list"></ul>
+                    <p id="dynamic-empty" class="empty-state">Ninguna figura dinámica cargada</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel provider-panel" aria-labelledby="provider-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Puerto 18081</p>
+                    <h2 id="provider-title">Proveedor externo</h2>
+                </div>
+                <div id="provider-status" class="connection-status unavailable">
+                    <span class="status-dot"></span><span id="provider-status-label">Comprobando...</span>
+                </div>
+            </div>
+            <p id="provider-message" class="muted provider-message">Entrega definiciones Groovy mediante HTTP.</p>
+            <div id="external-figures" class="external-list"></div>
+        </section>
+
+        <section class="panel process-panel" aria-labelledby="process-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Evidencia visual</p>
+                    <h2 id="process-title">Proceso de carga</h2>
+                </div>
+                <span id="last-action" class="process-caption">Esperando una figura</span>
+            </div>
+            <ol id="process-list" class="process-list">
+                <li data-step="1" class="step pending"><span class="step-number">1</span><span>Solicitando una figura al servicio externo...</span></li>
+                <li data-step="2" class="step pending"><span class="step-number">2</span><span>Código Groovy recibido por HTTP</span></li>
+                <li data-step="3" class="step pending"><span class="step-number">3</span><span>Compilando clase en tiempo de ejecución...</span></li>
+                <li data-step="4" class="step pending"><span class="step-number">4</span><span>Clase registrada en FiguraFactory</span></li>
+                <li data-step="5" class="step pending"><span class="step-number">5</span><span>Figura disponible ✓</span></li>
+            </ol>
+        </section>
+
+        <section class="panel tester-panel" aria-labelledby="tester-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Reflection en acción</p>
+                    <h2 id="tester-title">Probar una figura</h2>
+                </div>
+            </div>
+            <form id="figure-form" novalidate>
+                <label class="field-label" for="figure-select">Figura</label>
+                <select id="figure-select" class="input" required></select>
+                <div id="parameters-container" class="parameters-container"></div>
+                <button id="calculate-button" class="button button-primary" type="submit">Calcular área y perímetro</button>
+            </form>
+            <div id="result" class="result-card hidden" aria-live="polite">
+                <p class="result-title">Resultado de FiguraFactory</p>
+                <div class="result-values">
+                    <div><span>Área</span><strong id="result-area">—</strong></div>
+                    <div><span>Perímetro</span><strong id="result-perimeter">—</strong></div>
+                </div>
+            </div>
+            <p id="ui-error" class="ui-error hidden" role="alert"></p>
+        </section>
+    </main>
+
+    <footer class="footer">Interfaz académica para visualizar Reflection y compilación dinámica con Groovy.</footer>
+</div>
+</body>
+</html>

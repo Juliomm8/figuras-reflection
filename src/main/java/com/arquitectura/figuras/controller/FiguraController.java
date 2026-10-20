@@ -3,7 +3,9 @@ package com.arquitectura.figuras.controller;
 import com.arquitectura.figuras.dto.CargarGroovyRequest;
 import com.arquitectura.figuras.dto.CargarGroovyResponse;
 import com.arquitectura.figuras.dto.CrearFiguraRequest;
+import com.arquitectura.figuras.dto.FigurasDisponiblesResponse;
 import com.arquitectura.figuras.dto.FiguraResponse;
+import com.arquitectura.figuras.dto.ProveedorEstadoResponse;
 import com.arquitectura.figuras.model.Figura;
 import com.arquitectura.figuras.service.FiguraFactory;
 import com.arquitectura.figuras.service.FiguraExternaService;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/figuras")
@@ -36,6 +39,18 @@ public class FiguraController {
 	@GetMapping
 	public ResponseEntity<Map<String, String>> estado() {
 		return ResponseEntity.ok(Map.of("mensaje", "API de figuras funcionando"));
+	}
+
+	@GetMapping("/disponibles")
+	public FigurasDisponiblesResponse disponibles() {
+		return new FigurasDisponiblesResponse(
+				figuraFactory.obtenerNombresFigurasNativas(),
+				figuraFactory.obtenerClasesDinamicas().keySet().stream().sorted().collect(Collectors.toList()));
+	}
+
+	@GetMapping("/proveedor/estado")
+	public ProveedorEstadoResponse estadoProveedor() {
+		return new ProveedorEstadoResponse(figuraExternaService.proveedorDisponible());
 	}
 
 	@PostMapping("/crear")

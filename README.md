@@ -184,7 +184,7 @@ Así se conservan los dos usos de Java Reflection: `Constructor` permite localiz
 
 ## EXTRA: proveedor externo de figuras
 
-El proyecto incluye un pequeño servicio independiente llamado `figuras-provider`. Su único objetivo es entregar definiciones de figuras como código Groovy mediante HTTP. Corre en el puerto `8081`, separado de la aplicación principal que corre en `8080`, para demostrar la comunicación entre dos aplicaciones Spring distintas.
+El proyecto incluye un pequeño servicio independiente llamado `figuras-provider`. Su único objetivo es entregar definiciones de figuras como código Groovy mediante HTTP. Corre en el puerto `18081`, separado de la aplicación principal que corre en `8080`, para demostrar la comunicación entre dos aplicaciones Spring distintas.
 
 El flujo completo es:
 
@@ -193,7 +193,7 @@ Cliente
   ↓
 Spring principal (8080)
   ↓ HTTP con RestClient
-figuras-provider (8081)
+figuras-provider (18081)
   ↓ código Groovy
 FiguraExternaService
   ↓
@@ -212,7 +212,7 @@ El proveedor tiene inicialmente estas figuras:
 La URL base se configura en `src/main/resources/application.properties`:
 
 ```ini
-figuras.provider.url=http://localhost:8081
+figuras.provider.url=http://localhost:18081
 ```
 
 La aplicación principal no conoce el código Groovy de esas figuras. `FiguraExternaService` solicita `GET /api/figuras/{nombre}` con `RestClient`, valida la respuesta y entrega el código a `GroovyCompilerService` para compilarlo y registrarlo.
@@ -226,7 +226,7 @@ cd C:\Dev\Arquitectura\figuras-reflection
 .\mvnw.cmd -f figuras-provider\pom.xml spring-boot:run
 ```
 
-El proveedor queda disponible en `http://localhost:8081`. En una segunda terminal, inicia la aplicación principal:
+El proveedor queda disponible en `http://localhost:18081`. En una segunda terminal, inicia la aplicación principal:
 
 ```powershell
 cd C:\Dev\Arquitectura\figuras-reflection
@@ -238,7 +238,7 @@ Comprueba directamente que el proveedor entrega el código de `Pentagono`:
 ```powershell
 Invoke-RestMethod `
   -Method Get `
-  -Uri http://localhost:8081/api/figuras/Pentagono
+  -Uri http://localhost:18081/api/figuras/Pentagono
 ```
 
 Carga esa figura en la aplicación principal. Esta petición provoca la consulta HTTP, compilación Groovy y registro dinámico:
@@ -291,6 +291,48 @@ Invoke-RestMethod `
 ```
 
 Si se solicita una figura que el proveedor no conoce, por ejemplo `Inexistente`, la aplicación principal devuelve un error HTTP 400 entendible. Si el proveedor está apagado, `FiguraExternaService` también devuelve un error controlado sin eliminar ni afectar los endpoints locales.
+
+## Demostración visual
+
+La aplicación principal incluye una interfaz web sencilla, servida directamente por Spring Boot, para observar el estado antes y después de cargar una figura dinámica. El proveedor externo usa el puerto `18081` y la aplicación principal usa el puerto `8080`.
+
+1. Inicia primero el proveedor:
+
+   ```powershell
+   cd C:\Dev\Arquitectura\figuras-reflection
+   .\mvnw.cmd -f figuras-provider\pom.xml spring-boot:run
+   ```
+
+2. En una segunda terminal, inicia la aplicación principal:
+
+   ```powershell
+   cd C:\Dev\Arquitectura\figuras-reflection
+   .\mvnw.cmd spring-boot:run
+   ```
+
+3. Abre `http://localhost:8080` en el navegador. Al inicio, `Pentagono` y `Hexagono` aparecen como `NO CARGADO` y la sección de figuras dinámicas muestra `Ninguna figura dinámica cargada`.
+
+4. Pulsa `Obtener y cargar` en la tarjeta de `Pentagono`. La interfaz muestra el flujo `Servicio externo → HTTP → Groovy → Compilación runtime → FiguraFactory → Figura disponible`, y después marca `Pentagono CARGADO ✓`.
+
+5. En la sección `Probar una figura`, selecciona `Pentagono`, introduce `5` en `lado` y pulsa `Calcular`. Se muestran aproximadamente `Área: 43.011935` y `Perímetro: 25` sin reiniciar Spring.
+
+También puedes cargar `Hexagono` desde su propia tarjeta y probarlo en el mismo selector. El botón `Actualizar estado` vuelve a consultar las figuras dinámicas y el estado del proveedor.
+
+El flujo que se está demostrando es:
+
+```text
+Cliente
+  ↓
+Spring principal (8080)
+  ↓ HTTP
+figuras-provider (18081)
+  ↓ código Groovy
+GroovyCompilerService
+  ↓ registro dinámico
+FiguraFactory
+  ↓
+Figura disponible
+```
 
 ## Pruebas
 

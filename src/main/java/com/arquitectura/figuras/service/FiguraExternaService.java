@@ -51,4 +51,16 @@ public class FiguraExternaService {
 			throw new FiguraException("El código de la figura externa no es válido: " + exception.getMessage(), exception);
 		}
 	}
+
+	public boolean proveedorDisponible() {
+		try {
+			restClient.get()
+					.uri("/api/figuras/Pentagono")
+					.retrieve()
+					.toBodilessEntity();
+			return true;
+		} catch (RestClientException exception) {
+			return false;
+		}
+	}
 }
