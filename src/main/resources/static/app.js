@@ -7,6 +7,11 @@ const fieldConfig = {
         { name: "base", label: "Base" },
         { name: "altura", label: "Altura" }
     ],
+    Triangulo: [
+        { name: "ladoA", label: "Lado A" },
+        { name: "ladoB", label: "Lado B" },
+        { name: "ladoC", label: "Lado C" }
+    ],
     TrianguloEquilatero: [{ name: "lado", label: "Lado" }],
     Pentagono: [{ name: "lado", label: "Lado" }],
     Hexagono: [{ name: "lado", label: "Lado" }]

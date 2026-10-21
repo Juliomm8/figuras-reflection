@@ -1,7 +1,9 @@
 package com.arquitectura.figuras.service;
 
 import com.arquitectura.figuras.model.Circulo;
+import com.arquitectura.figuras.model.Cuadrado;
 import com.arquitectura.figuras.model.Figura;
+import com.arquitectura.figuras.model.Rectangulo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FiguraFactoryTest {
 
@@ -57,8 +60,20 @@ class FiguraFactoryTest {
 	void creaCuadradoMedianteReflection() {
 		Figura cuadrado = figuraFactory.crearFigura("Cuadrado", Map.of("lado", 4));
 
+		assertInstanceOf(Rectangulo.class, cuadrado);
+		assertEquals(Cuadrado.class, cuadrado.getClass());
 		assertEquals(16, cuadrado.calcularArea(), 0.0000001);
 		assertEquals(16, cuadrado.calcularPerimetro(), 0.0000001);
+	}
+
+	@Test
+	void creaTrianguloGeneralMedianteReflection() {
+		Figura triangulo = figuraFactory.crearFigura("Triangulo",
+				Map.of("ladoA", 3, "ladoB", 4, "ladoC", 5));
+
+		assertTrue(figuraFactory.obtenerNombresFigurasNativas().contains("Triangulo"));
+		assertEquals(6, triangulo.calcularArea(), 0.0000001);
+		assertEquals(12, triangulo.calcularPerimetro(), 0.0000001);
 	}
 
 	@Test

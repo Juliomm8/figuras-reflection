@@ -48,7 +48,7 @@ Los modelos están en `model`, los servicios de creación y compilación en `ser
 
 ## Figuras nativas
 
-La aplicación incluye `Circulo`, `Cuadrado`, `Rectangulo` y `TrianguloEquilatero`. Todas implementan:
+La aplicación incluye `Circulo`, `Cuadrado`, `Rectangulo`, `Triangulo` y `TrianguloEquilatero`. Todas implementan:
 
 ```java
 public interface Figura {
@@ -56,6 +56,49 @@ public interface Figura {
     double calcularPerimetro();
 }
 ```
+
+## Diseño Orientado a Objetos
+
+La solución aplica los principios básicos de diseño orientado a objetos sin agregar capas innecesarias:
+
+- **Abstracción:** `Figura` define las operaciones comunes `calcularArea()` y `calcularPerimetro()`, sin imponer cómo se calculan para cada forma.
+- **Polimorfismo:** `FiguraFactory` y el controlador trabajan con referencias del tipo `Figura`. La misma llamada a `calcularArea()` funciona para un círculo, un rectángulo, un triángulo o cualquier figura dinámica registrada.
+- **Herencia:** `Cuadrado` extiende `Rectangulo`, llama a `super(lado, lado)` y reutiliza los cálculos de área y perímetro del rectángulo.
+- **Encapsulamiento:** cada clase mantiene sus dimensiones como atributos privados y expone únicamente las operaciones del contrato `Figura`.
+
+El triángulo general se modela en `Triangulo` con los lados `ladoA`, `ladoB` y `ladoC`. Su perímetro es la suma de los lados y su área se calcula con la fórmula de Herón. `TrianguloEquilatero` se conserva como una figura nativa de la actividad anterior.
+
+### Diagrama de clases
+
+```mermaid
+classDiagram
+    class Figura {
+        <<interface>>
+        +calcularArea() double
+        +calcularPerimetro() double
+    }
+
+    class Circulo
+    class Rectangulo
+    class Cuadrado
+    class Triangulo
+    class TrianguloEquilatero
+    class FiguraFactory
+
+    Figura <|.. Circulo : implements
+    Figura <|.. Rectangulo : implements
+    Rectangulo <|-- Cuadrado : extends
+    Figura <|.. Triangulo : implements
+    Figura <|.. TrianguloEquilatero : implements
+    FiguraFactory ..> Figura : crea y devuelve
+```
+
+### Historias de usuario
+
+- **HU-01 Crear una figura:** como usuario, quiero seleccionar un tipo de figura e ingresar sus dimensiones para que el sistema cree la figura correspondiente.
+- **HU-02 Calcular el área:** como usuario, quiero calcular el área de una figura para conocer la superficie que ocupa.
+- **HU-03 Calcular el perímetro:** como usuario, quiero calcular el perímetro de una figura para conocer la longitud total de su contorno.
+- **HU-04 Utilizar diferentes figuras:** como usuario, quiero trabajar con distintos tipos de figuras mediante las mismas operaciones para no depender de una implementación específica.
 
 ## Ejecución
 

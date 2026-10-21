@@ -21,7 +21,7 @@ public class FiguraFactory {
 
 	private static final String PAQUETE_FIGURAS_NATIVAS = "com.arquitectura.figuras.model.";
 	private static final List<String> NOMBRES_FIGURAS_NATIVAS = List.of(
-			"Circulo", "Cuadrado", "Rectangulo", "TrianguloEquilatero");
+			"Circulo", "Cuadrado", "Rectangulo", "Triangulo", "TrianguloEquilatero");
 
 	private final Map<String, Class<? extends Figura>> clasesDinamicas = new ConcurrentHashMap<>();
 
